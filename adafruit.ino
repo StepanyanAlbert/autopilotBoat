@@ -42,6 +42,9 @@ void setup()
     Compass.SetSamplingMode(COMPASS_SINGLE);
     Compass.SetScale(COMPASS_SCALE_088);
     Compass.SetOrientation(COMPASS_HORIZONTAL_X_NORTH);
+    
+    //pin to see if gps fix is 1 
+   pinMode(LED_BUILTIN, OUTPUT);
    
     // 9600 NMEA is the default baud rate for Adafruit MTK GPS's- some use 4800
    GPS.begin(9600);
@@ -107,8 +110,7 @@ void loop()
     if (GPSECHO)
       if (c) Serial.print(c);
   }
-  
-        Servo1.write(90); 
+//  Servo1.write(90); 
   // if a sentence is received, we can check the checksum, parse it...
   if (GPS.newNMEAreceived()) {
     if (!GPS.parse(GPS.lastNMEA()))   // this also sets the newNMEAreceived() flag to false
@@ -120,9 +122,7 @@ void loop()
         float currentHeading = Compass.GetHeadingDegrees();
         float turnAngle;
         
-        float differencceInAngles=targetHeading-currentHeading;
-        Serial.print(" diff angles");
-        Serial.println(differencceInAngles);
+        float differencceInAngles=targetHeading-currentHeading;        
         Serial.print("target heading");Serial.println(targetHeading);
         Serial.print("current heading");Serial.println(currentHeading);
         if( differencceInAngles>5 || differencceInAngles <0 ){
@@ -137,26 +137,36 @@ void loop()
                   float targetAngle=map(correction, -180, 180, -60, 60);
                    turnAngle=targetAngle+90;
             }else{
-              float correction=abs(differencceInAngles);
-              float targetAngle=map(correction, -180, 180, -60, 60);
+               float correction;
+               if(differencceInAngles <=-180){
+                 correction=360-abs(differencceInAngles);
+              }else{
+                 correction=differencceInAngles;
+                }
+              float targetAngle=map(correctio n, -180, 180, -60, 60);
+                Serial.print("correction ");Serial.println(correction);
               turnAngle=targetAngle+90;
               }
               Servo1.write(turnAngle); 
-              delay(1000);
+              delay(3000);
               //Servo1.write(90); 
          }
         Serial.print("turn angle ");Serial.print(turnAngle);
-        Servo1.write(90); 
-        delay(1000);  
+        digitalWrite(LED_BUILTIN, HIGH); 
+        delay(2000);  
+        digitalWrite(LED_BUILTIN, LOW);
 //      }else{
-//        Serial.println("No gps"); delay(1000);
+//          digitalWrite(LED_BUILTIN, LOW);
+//            Serial.println("No gps"); delay(1000);
+
 //        }
-          Serial.print("Fix: "); 
-          Serial.print((int)GPS.fix);
-          Serial.print(" quality: ");
-          Serial.println((int)GPS.fixquality); 
-           delay(500); Servo1.write(90); 
-//      Serial.print("Satellites: ");
+//          Serial.print("Fix: "); 
+//          Serial.print((int)GPS.fix);
+//          Serial.print(" quality: ");
+//          Serial.println((int)GPS.fixquality); 
+          
+           delay(500); 
+//     
   }
 
 
